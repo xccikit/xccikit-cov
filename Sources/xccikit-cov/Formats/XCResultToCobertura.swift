@@ -35,13 +35,13 @@ func convert(fromXCResultCommon xcresult: XCResultCovCommon) -> Cobertura.Covera
 private func classes(from xcresult: XCResultCovFile) -> [CoberturaClass] {
     var classes = [String : CoberturaClass]()
     for function in xcresult.functions {
-        let className = parseClassName(function.name)
+        let className = parse(className: function.name)
         var `class` = classes[className, default: CoberturaClass(name: className,
                                         filename: xcresult.path,
                                         coverage: .init(branchRate: 0.0, lineRate: xcresult.lineCoverage,
                                                         complexity: 0.0), methods: [])]
         
-        let methodNameAndSignature = parseMethodName(function.name)
+        let methodNameAndSignature = parse(methodName: function.name)
         `class`.methods.append(.init(name: methodNameAndSignature,
                                      signature: methodNameAndSignature,
                                      coverage: .init(branchRate: 0.0,
@@ -53,9 +53,9 @@ private func classes(from xcresult: XCResultCovFile) -> [CoberturaClass] {
     return Array(classes.values)
 }
 
-private func parseClassName(_ string: String) -> String {
+private func parse(className string: String) -> String {
     if string.hasSuffix(")") && !string.contains(".") && string.contains(":") {
-        return "func" //string.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "func"
     }
     
     let name = string.split(separator: " ").map{
@@ -67,7 +67,7 @@ private func parseClassName(_ string: String) -> String {
     return name != nil ? String(name!) : string
 }
 
-private func parseMethodName(_ string: String) -> String {
+private func parse(methodName string: String) -> String {
     let parts = string.split(separator: " ").map{
         $0.trimmingCharacters(in: .whitespacesAndNewlines)
     }.filter{ !$0.isEmpty }.first {

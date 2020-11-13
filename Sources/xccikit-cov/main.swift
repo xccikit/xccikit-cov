@@ -3,7 +3,9 @@ import ArgumentParser
 
 enum CoverageFormats: String {
     case cobertura
+    case jacoco
     case json
+    case lcov
     case html
 }
 
@@ -45,7 +47,19 @@ struct XCCIKitCov: ParsableCommand {
         xcresult.dropTargets { !targets.contains($0.name) }
         print(xcresult.targets.map {$0.name})
         
-        let cob = cobertura(from: xcresult)
+        var outputString: String?
+        switch CoverageFormats(rawValue: format ?? "") {
+        case .cobertura:
+            let cob = cobertura(from: xcresult)
+            outputString = cob.xmlElement.xmlString(options: .nodePrettyPrint)
+
+        case .jacoco:
+            let coco = jacoco(from: xcresult)
+            outputString = coco.xmlElement.xmlString(options: .nodePrettyPrint)
+            
+        default:
+            return // change to throw
+        }
         
         var outputFile = FileHandle.standardOutput
         if let outputPath = outputPath, outputPath != "-" {
@@ -58,8 +72,7 @@ struct XCCIKitCov: ParsableCommand {
             }
             outputFile = try FileHandle.init(forWritingTo: outputURL)
         }
-
-        cob.xmlElement.xmlString(options: .nodePrettyPrint).write(to: &outputFile)
+        outputString?.write(to: &outputFile)
     }
 }
 
