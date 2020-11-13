@@ -12,10 +12,12 @@
 //   "functions": [
 class XCResultCovFile: XCResultCovCommon {
     let path: String
+    let name: String
     let functions: [XCResultCovFunction]
 
     internal init(coveredLines: UInt, lineCoverage: Double, executableLines: UInt,
-                  path: String, functions: [XCResultCovFunction]) {
+                  name: String, path: String, functions: [XCResultCovFunction]) {
+        self.name = name
         self.path = path
         self.functions = functions
 
@@ -23,11 +25,12 @@ class XCResultCovFile: XCResultCovCommon {
     }
 
     enum CodingKeys: String, CodingKey {
-        case path, functions
+        case path, functions, name
     }
 
     required init(from decoder: Decoder) throws {
         let cntr = try decoder.container(keyedBy: CodingKeys.self)
+        name = try cntr.decode(String.self, forKey: .name)
         path = try cntr.decode(String.self, forKey: .path)
         functions = try cntr.decode([XCResultCovFunction].self, forKey: .functions)
         try super.init(from: decoder)

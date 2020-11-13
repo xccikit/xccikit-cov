@@ -18,7 +18,7 @@ class XCResultCovCommon: Decodable {
 }
 
 class XCResultCov: XCResultCovCommon {
-    let targets: [XCResultCovTarget]
+    var targets: [XCResultCovTarget]
     
     enum CodingKeys: String, CodingKey {
         case targets
@@ -33,5 +33,11 @@ class XCResultCov: XCResultCovCommon {
         targets = try (try decoder.container(keyedBy: CodingKeys.self))
             .decode([XCResultCovTarget].self, forKey: .targets)
         try super.init(from: decoder)
+    }
+    
+    
+    /// A helper method to filter targets
+    func dropTargets(_ shouldDrop: (XCResultCovTarget) throws -> Bool) rethrows {
+        targets = try targets.filter {!(try shouldDrop($0))}
     }
 }
