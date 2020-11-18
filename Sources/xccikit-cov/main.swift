@@ -22,7 +22,7 @@ struct XCCIKitCov: ParsableCommand {
     private var format: String?
     
     @Option(name: [.customLong("xformat"), .customShort("x")],
-            help: "The output path, if not specified output is written to stdout")
+            help: "Additional formatting options. Use like '--xformat:option=value', it can be repeated multiple times.")
     private var formatOptions: [String] = []
     
     @Option(name: .shortAndLong,
