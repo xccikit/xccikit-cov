@@ -7,6 +7,18 @@
 
 import Foundation
 
+//let XMLHeader = XMLElement(name: "?xml", attributes: [
+//    "version": "1.0",
+//    "encoding": "UTF-8",
+//    "standalone": "yes"
+//])
+
+//XMLHeader
+//<!DOCTYPE report
+//  PUBLIC '-//JACOCO//DTD Report 1.0//EN'
+//  'report.dtd'>
+
+
 protocol XMLElementProtocol {
     var xmlElement: XMLElement { get }
 }

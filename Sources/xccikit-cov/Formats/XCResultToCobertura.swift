@@ -41,7 +41,7 @@ private func classes(from xcresult: XCResultCovFile) -> [CoberturaClass] {
                                         coverage: .init(branchRate: 0.0, lineRate: xcresult.lineCoverage,
                                                         complexity: 0.0), methods: [])]
         
-        let methodNameAndSignature = parse(methodName: function.name)
+        let methodNameAndSignature = parse(methodSignature: function.name)
         `class`.methods.append(.init(name: methodNameAndSignature,
                                      signature: methodNameAndSignature,
                                      coverage: .init(branchRate: 0.0,
@@ -51,33 +51,4 @@ private func classes(from xcresult: XCResultCovFile) -> [CoberturaClass] {
     }
 
     return Array(classes.values)
-}
-
-private func parse(className string: String) -> String {
-    if string.hasSuffix(")") && !string.contains(".") && string.contains(":") {
-        return "func"
-    }
-    
-    let name = string.split(separator: " ").map{
-        $0.trimmingCharacters(in: .whitespacesAndNewlines)
-    }.filter{ !$0.isEmpty }.first {
-        $0.contains(".")
-    }?.split(separator: ".").first
-    
-    return name != nil ? String(name!) : string
-}
-
-private func parse(methodName string: String) -> String {
-    let parts = string.split(separator: " ").map{
-        $0.trimmingCharacters(in: .whitespacesAndNewlines)
-    }.filter{ !$0.isEmpty }.first {
-        $0.contains(".")
-    }?.split(separator: ".")
-    
-    var name = String(parts?.last ?? "")
-    if let parts = parts, ["getter", "didset", "willset", "setter"].contains(name) {
-        name = parts[(parts.count-2)..<parts.count].joined(separator: ".")
-    }
-    
-    return !name.isEmpty ? name : string
 }

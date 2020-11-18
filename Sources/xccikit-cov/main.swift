@@ -21,6 +21,10 @@ struct XCCIKitCov: ParsableCommand {
             help: "The 'Cobertura' coverage format")
     private var format: String?
     
+    @Option(name: [.customLong("xformat"), .customShort("x")],
+            help: "The output path, if not specified output is written to stdout")
+    private var formatOptions: [String] = []
+    
     @Option(name: .shortAndLong,
             help: "The output path, if not specified output is written to stdout")
     private var outputPath: String?
@@ -55,8 +59,12 @@ struct XCCIKitCov: ParsableCommand {
 
         case .jacoco:
             let coco = jacoco(from: xcresult)
-            outputString = coco.xmlElement.xmlString(options: .nodePrettyPrint)
-            
+            outputString = coco?.xmlDocument.xmlString(
+                options: [
+                    .nodePrettyPrint,
+                    .documentIncludeContentTypeDeclaration,
+                ])
+
         default:
             return // change to throw
         }

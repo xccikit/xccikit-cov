@@ -9,20 +9,31 @@ import Foundation
 
 struct JaCoCo: XMLElementProtocol {
     var name: String
-    
     var sessionInformation: SessionInfo
 
     var xmlDocument: XMLDocument {
-        XMLDocument(rootElement: xmlElement)
+        let doc = XMLDocument(rootElement: xmlElement)
+        doc.isStandalone = true
+        doc.version = "1.0"
+        return doc
     }
     
     var xmlElement: XMLElement {
-        XMLElement(name: "report", attributes: [
+        let elem = XMLElement(name: "report", attributes: [
             "name": name
         ], children: [
             sessionInformation
         ])
+        
+        if !packages.isEmpty {
+            elem.addChild(XMLElement(name: "packages", children: packages))
+        }
+
+        return elem
     }
+
+    var groups = [Group]()
+    var packages = [Package]()
 }
 
 extension JaCoCo {
@@ -51,7 +62,6 @@ extension JaCoCo {
     
     struct Package: XMLElementProtocol {
         var name: String
-        
         var classes: [Class]
         var sourceFiles: [SourceFile]
         
@@ -65,44 +75,49 @@ extension JaCoCo {
             if !sourceFiles.isEmpty {
                 elem.addChildren(sourceFiles)
             }
-            
+
             return elem
         }
         
         struct Class: XMLElementProtocol {
             var name: String
             var sourceFileName: String
-            
-            var counters: [Counter] = []
+
             var methods: [Method] = []
+            var counters: [Counter] = []
 
             var xmlElement: XMLElement {
-                .init(name: "class", attributes: [
+                let elem = XMLElement(name: "class", attributes: [
                     "name": name,
                     "sourcefilename": sourceFileName
                 ])
+
+                elem.addChildren(counters)
+                elem.addChildren(methods)
+
+                return elem
             }
             
             struct Method: XMLElementProtocol {
                 var name: String
-                var desc: String
+                var description: String
                 var line: UInt
                 var counters: [Counter] = []
 
                 var xmlElement: XMLElement {
-                    .init()
+                    .init(name: "method", attributes: [
+                        "name": name,
+                        "desc": description,
+                        "line": String(line)
+                    ], children: counters)
                 }
             }
-        }
-        
-        struct SourceFile: XMLElementProtocol {
-            var xmlElement: XMLElement { .init() }
         }
     }
     
     struct Counter: XMLElementProtocol {
-        var missed: String
-        var covered: String
+        var missed: UInt
+        var covered: UInt
         var type: Type
         
         enum `Type`: String {
@@ -117,8 +132,8 @@ extension JaCoCo {
         var xmlElement: XMLElement {
             .init(name: "counter", attributes: [
                 "type": type.rawValue,
-                "covered": covered,
-                "missed": missed
+                "covered": String(covered),
+                "missed": String(missed)
             ])
         }
     }
@@ -126,7 +141,7 @@ extension JaCoCo {
     struct SourceFile: XMLElementProtocol {
         var name: String
         var lines: [Line] = []
-        var counters: [Counter]
+        var counters: [Counter] = []
 
         var xmlElement: XMLElement {
             let elem = XMLElement(name: "sourcefile", attributes: [
